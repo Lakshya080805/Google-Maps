@@ -125,45 +125,63 @@ const App = () => {
   const [rating, setRating] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    // if (bounds) {
-    //   setIsLoading(true);
-    //   getPlacesData(bounds.sw, bounds.ne)
-    //     .then((data) => {
-    //       setPlaces(data);
-    //       setIsLoading(false);
-    //     });
-    // }
+  const [childClicked, setChildClicked] = useState(null);
+
+  
+
+//   const filteredPlaces = places.filter((place) =>
+//   place.name &&
+//   place.num_reviews > 0 &&
+//   (!rating || Number(place.rating) >= rating) &&
+//   (type === 'restaurants' || type === 'hotels' || type === 'attractions')
+// );
+
+const typeMapping = {
+ restaurants: ['restaurant', 'restaurants'],
+  hotels: ['hotel', 'hotels'],
+  attractions: ['attraction', 'attractions'],
+};
+
+const filteredPlaces = places.filter((place) =>
+  place.name &&
+  place.num_reviews > 0 &&
+  (!rating || Number(place.rating) >= rating) &&
+  (!type || place.category?.key?.toLowerCase() === type.slice(0, -1))
+);
+
+   useEffect(() => {
     const timeout = setTimeout(() => {
-    if (bounds) {
-      setIsLoading(true);
-      getPlacesData(bounds.sw, bounds.ne)
-        .then((data) => {
+      if (bounds) {
+        console.log('Fetching for type:', type);
+        setIsLoading(true);
+        getPlacesData(type,bounds.sw, bounds.ne)
+          .then((data) => {
+            
 
-          console.log('✅ Places fetched:', data);
-          
-          setPlaces(data);
-          setIsLoading(false);
-        });
-    }
-  }, 1000); // 1 second debounce
+            // data.forEach(place => console.log('Category Key:', place.category?.key));
 
-  return () => clearTimeout(timeout);
-  }, [bounds]);
+            setPlaces(data);
+            setIsLoading(false);
+          });
+      }
+    }, 1000);
+    return () => clearTimeout(timeout);
+  }, [bounds,type]);
 
   return (
     <>
       <CssBaseline />
-      <Header />
+      <Header setCoordinates={setCoordinates} />
       <div style={{ display: 'flex', height: 'calc(100vh - 64px)' }}>
         <div style={{ width: '30%', overflowY: 'auto' }}>
           <List
-            places={places}
+            places={filteredPlaces}
             type={type}
             setType={setType}
             rating={rating}
             setRating={setRating}
             isLoading={isLoading}
+            childClicked={childClicked} // 👈 pass to List
           />
         </div>
         <div style={{ width: '70%' }}>
@@ -171,7 +189,9 @@ const App = () => {
             coordinates={coordinates}
             setCoordinates={setCoordinates}
             setBounds={setBounds}
-            places={places}
+            places={filteredPlaces}
+            setChildClicked={setChildClicked} // 👈 pass to Map
+            
           />
         </div>
       </div>

@@ -293,7 +293,7 @@ import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import './Map.css';
 
-const Map = ({ coordinates, setCoordinates, setBounds, places }) => {
+const Map = ({ coordinates, setCoordinates, setBounds, places,setChildClicked }) => {
   const mapContainer = useRef(null);
   const map = useRef(null);
   const markersRef = useRef([]);
@@ -323,16 +323,14 @@ const Map = ({ coordinates, setCoordinates, setBounds, places }) => {
     });
   }, []);
 
-  useEffect(() => {
+   useEffect(() => {
     if (!map.current || !places || places.length === 0) return;
-
-    console.log('Rendering markers for:', places.length, 'places');
 
     // Clear old markers
     markersRef.current.forEach((marker) => marker.remove());
     markersRef.current = [];
 
-    places.forEach((place) => {
+    places.forEach((place, i) => {
       if (place.latitude && place.longitude) {
         const markerEl = document.createElement('div');
         markerEl.className = 'custom-marker';
@@ -341,14 +339,22 @@ const Map = ({ coordinates, setCoordinates, setBounds, places }) => {
         img.src = place.photo?.images?.small?.url || 'https://via.placeholder.com/50';
         img.alt = place.name || 'Place';
         img.title = place.name || '';
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = 'cover';
 
         markerEl.appendChild(img);
 
-        const newMarker = new maplibregl.Marker(markerEl)
-  .setLngLat([Number(place.longitude), Number(place.latitude)])
-  .addTo(map.current);
+        const newMarker = new maplibregl.Marker({ element: markerEl })
+          .setLngLat([Number(place.longitude), Number(place.latitude)])
+          .addTo(map.current);
 
-markersRef.current.push(newMarker);
+        // 👇 Add click listener to notify which marker was clicked
+        markerEl.addEventListener('click', () => {
+          if (setChildClicked) setChildClicked(i);
+        });
+
+        markersRef.current.push(newMarker);
       }
     });
   }, [places]);

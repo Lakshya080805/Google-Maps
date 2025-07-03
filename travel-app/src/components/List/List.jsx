@@ -123,7 +123,7 @@
 // export default List;
 //-------------------------------------------------------------------------------------------------------------------------
 
-import React from 'react';
+import React,{ useRef, useEffect } from 'react';
 import {
   Typography,
   InputLabel,
@@ -137,8 +137,15 @@ import {
 import PlaceDetails from '../PlaceDetails/PlaceDetails';
 import useStyles from './styles';
 
-const List = ({ places, type, setType, rating, setRating, isLoading }) => {
+const List = ({ places, type, setType, rating, setRating, isLoading,childClicked }) => {
   const classes = useStyles();
+  const refs=useRef([]);
+
+  useEffect(() => {
+    if (childClicked !== null && refs.current[childClicked]) {
+      refs.current[childClicked].scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [childClicked]);
 
   return (
     <div className={classes.container}>
@@ -183,7 +190,7 @@ const List = ({ places, type, setType, rating, setRating, isLoading }) => {
 
           <Box className={classes.list}>
             {places?.map((place, i) => (
-              <Box key={i} mb={2}>
+              <Box key={i} mb={2} ref={(el) => (refs.current[i] = el)}>
                 <PlaceDetails place={place} />
               </Box>
             ))}
