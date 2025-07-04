@@ -54,7 +54,7 @@ export const getPlacesData = async (type,sw, ne) => {
       
       },
       headers: {
-        'x-rapidapi-key': '836d057db0msh88239e4499eeb14p17c883jsn7861bc7c0a90',
+        'x-rapidapi-key': import.meta.env.VITE_TRAVEL_API,
         'x-rapidapi-host': 'travel-advisor.p.rapidapi.com'
       }
     });
@@ -64,4 +64,50 @@ export const getPlacesData = async (type,sw, ne) => {
     console.error('API Error:', error);
     return [];
   }
+}
+
+// ⛅ Function to fetch weather data
+export const getWeatherData = async (lat, lon) => {
+  try {
+    const res = await axios.get(
+      `https://api.openweathermap.org/data/2.5/weather`,
+      {
+        params: {
+          lat,
+          lon,
+          units: 'metric',
+          appid: import.meta.env.VITE_WEATHER_API, // ⬅ Replace with actual key
+        },
+      }
+    );
+    return res.data;
+  } catch (error) {
+    console.error("API Error (weather):", error);
+    return null;
+  }
 };
+
+// export const getWeatherData = async (places) => {
+//   const apiKey = import.meta.env.VITE_WEATHER_API;
+
+//   const weatherRequests = places.map((place) => {
+//     if (!place.latitude || !place.longitude) return null;
+
+//     return axios.get(`https://api.openweathermap.org/data/2.5/weather`, {
+//       params: {
+//         lat: place.latitude,
+//         lon: place.longitude,
+//         units: 'metric',
+//         appid: apiKey,
+//       },
+//     });
+//   });
+
+//   const results = await Promise.allSettled(weatherRequests);
+
+//   return results.map((res, index) =>
+//     res.status === 'fulfilled'
+//       ? { ...res.value.data, placeIndex: index }
+//       : null
+//   );
+// };

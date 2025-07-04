@@ -110,7 +110,7 @@
 import React, { useState, useEffect } from 'react';
 import { CssBaseline } from '@mui/material';
 
-import { getPlacesData } from './api';
+import { getPlacesData,getWeatherData  } from './api';
 import Header from './components/Header/Header';
 import List from './components/List/List';
 import Map from './components/Map/Map';
@@ -126,6 +126,8 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const [childClicked, setChildClicked] = useState(null);
+
+  const [weather, setWeather] = useState(null);
 
   
 
@@ -150,28 +152,46 @@ const filteredPlaces = places.filter((place) =>
 );
 
    useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (bounds) {
-        console.log('Fetching for type:', type);
-        setIsLoading(true);
-        getPlacesData(type,bounds.sw, bounds.ne)
-          .then((data) => {
-            
+  const timeout = setTimeout(() => {
+    if (bounds) {
+      console.log('📦 BOUNDS:', bounds); // 👈 CHECK THIS
+      setIsLoading(true);
+      getPlacesData(type, bounds.sw, bounds.ne)
+        .then((data) => {
+          console.log('📍 RAW API DATA:', data); // 👈 THIS IS CRITICAL
+          setPlaces(data || []);
+          setIsLoading(false);
+        })
+        .catch((err) => {
+          console.error('❌ API Error:', err);
+        });
+    }
+  }, 1000);
+  return () => clearTimeout(timeout);
+}, [bounds, type]);
 
-            // data.forEach(place => console.log('Category Key:', place.category?.key));
+useEffect(() => {
+  if (coordinates.lat && coordinates.lng) {
+    getWeatherData(coordinates.lat, coordinates.lng).then((data) => {
+      setWeather(data);
+    });
+  }
+}, [coordinates]);
 
-            setPlaces(data);
-            setIsLoading(false);
-          });
-      }
-    }, 1000);
-    return () => clearTimeout(timeout);
-  }, [bounds,type]);
+// useEffect(() => {
+//   if (places && Array.isArray(places) && places.length > 0) {
+//     getWeatherData(places).then((data) => {
+//       setWeather(data.filter(Boolean)); // remove nulls
+//     });
+//   }
+// }, [places]);
+
+
 
   return (
     <>
       <CssBaseline />
-      <Header setCoordinates={setCoordinates} />
+      <Header onSearch={(coords) => setCoordinates(coords)}  weather={weather}/>
       <div style={{ display: 'flex', height: 'calc(100vh - 64px)' }}>
         <div style={{ width: '30%', overflowY: 'auto' }}>
           <List
@@ -191,7 +211,7 @@ const filteredPlaces = places.filter((place) =>
             setBounds={setBounds}
             places={filteredPlaces}
             setChildClicked={setChildClicked} // 👈 pass to Map
-            
+            // weatherData={[weather]} 
           />
         </div>
       </div>

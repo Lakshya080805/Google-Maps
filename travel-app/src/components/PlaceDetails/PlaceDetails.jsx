@@ -17,7 +17,8 @@ const PlaceDetails=({place})=>{
         style={{ height: 200 }}
         image={
           place.photo?.images?.large?.url ||
-          'https://via.placeholder.com/400x200?text=No+Image'
+          // 'https://via.placeholder.com/400x200?text=No+Image'
+          'https://placehold.co/400x200?text=No+Image'
         }
         title={place.name}
       />
